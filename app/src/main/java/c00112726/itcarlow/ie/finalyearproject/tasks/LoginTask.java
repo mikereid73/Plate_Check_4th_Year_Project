@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,6 +17,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.TaskCallbackJSON;
+
 /**
  * Author: Michael Reid.
  * ID: C00112726
@@ -28,12 +29,11 @@ public class LoginTask extends AsyncTask<String, Void, JSONObject> {
 
     private static final String TAG = "LoginTask";
     private static final String LOGIN_URL = "http://mikereid73.pythonanywhere.com/login";
-    private static final String KEY_SUCCESS = "success";
 
-    private TaskCallback  mTaskCallback;
+    protected TaskCallbackJSON mTaskCallback;
     protected ProgressDialog mProgressDialog;
 
-    public LoginTask(TaskCallback TaskCallback) {
+    public LoginTask(TaskCallbackJSON TaskCallback) {
         mTaskCallback = TaskCallback;
     }
 
@@ -43,6 +43,7 @@ public class LoginTask extends AsyncTask<String, Void, JSONObject> {
         mProgressDialog = new ProgressDialog((Context) mTaskCallback);
         mProgressDialog.setTitle("Please wait");
         mProgressDialog.setMessage("Authenticating...");
+        mProgressDialog.setIndeterminate(true);
         mProgressDialog.setCancelable(false);
         mProgressDialog.setCanceledOnTouchOutside(false);
         mProgressDialog.show();
@@ -111,19 +112,7 @@ public class LoginTask extends AsyncTask<String, Void, JSONObject> {
             mProgressDialog = null;
         }
 
-        try {
-            String response = result != null ? result.getString(KEY_SUCCESS) : "false";
-            if(Boolean.parseBoolean(response)) {
-                Toast.makeText((Context) mTaskCallback, "Login successful", Toast.LENGTH_SHORT).show();
-                mTaskCallback.onTaskComplete();
-            }
-            else {
-                Toast.makeText((Context) mTaskCallback, "Login failed", Toast.LENGTH_SHORT).show();
-            }
-        } catch (JSONException e) {
-            Log.wtf(TAG, e.getMessage());
-            Toast.makeText((Context) mTaskCallback, "Fatal Error", Toast.LENGTH_SHORT).show();
-        }
+        mTaskCallback.onTaskComplete(result);
     }
 }
 

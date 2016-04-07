@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,7 +17,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.ChangePasswordCallback;
+import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.TaskCallbackJSON;
 
 /**
  * Author: Michael Reid.
@@ -30,12 +29,11 @@ public class ChangePasswordTask extends AsyncTask<String, Void, JSONObject> {
 
     private static final String TAG = "ChangePasswordTask";
     private static final String LOGIN_URL = "http://mikereid73.pythonanywhere.com/change_password";
-    private static final String KEY_SUCCESS = "success";
 
-    private ChangePasswordCallback mTaskCallback;
+    private TaskCallbackJSON mTaskCallback;
     private ProgressDialog mProgressDialog;
 
-    public ChangePasswordTask(ChangePasswordCallback taskCallback) {
+    public ChangePasswordTask(TaskCallbackJSON taskCallback) {
         mTaskCallback = taskCallback;
     }
 
@@ -114,6 +112,6 @@ public class ChangePasswordTask extends AsyncTask<String, Void, JSONObject> {
             mProgressDialog = null;
         }
 
-        mTaskCallback.onChangePasswordComplete(json);
+        mTaskCallback.onTaskComplete(json);
     }
 }

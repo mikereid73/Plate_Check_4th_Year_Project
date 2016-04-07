@@ -17,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import c00112726.itcarlow.ie.finalyearproject.misc.NumberPlate;
+import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.TaskCallbackJSON;
 
 /**
  * Author: Michael Reid
@@ -24,14 +25,14 @@ import c00112726.itcarlow.ie.finalyearproject.misc.NumberPlate;
  * Email: c00112726@itcarlow.ie
  * Date: 26/03/2016
  */
-public class DatabaseConnectionTask extends AsyncTask<NumberPlate, String, String> {
+public class DatabaseConnectionTask extends AsyncTask<NumberPlate, Void, JSONObject> {
 
     private static final String TAG = "DatabaseConnectionTask";
     private static final String LOGIN_URL = "http://mikereid73.pythonanywhere.com/post";
-    private TaskCallback mTaskCallback;
+    private TaskCallbackJSON mTaskCallback;
     private ProgressDialog mProgressDialog;
 
-    public DatabaseConnectionTask(TaskCallback taskCallback) {
+    public DatabaseConnectionTask(TaskCallbackJSON taskCallback) {
         mTaskCallback = taskCallback;
     }
 
@@ -47,7 +48,7 @@ public class DatabaseConnectionTask extends AsyncTask<NumberPlate, String, Strin
     }
 
     @Override
-    protected String doInBackground(NumberPlate... params) {
+    protected JSONObject doInBackground(NumberPlate... params) {
 
         try {
             NumberPlate reg = params[0];
@@ -91,7 +92,7 @@ public class DatabaseConnectionTask extends AsyncTask<NumberPlate, String, Strin
             reader.close();
             in.close();
 
-            return sb.toString();
+            return new JSONObject(sb.toString());
         }
         catch (Exception e) {
             Log.e(TAG, e.getMessage());
@@ -101,14 +102,14 @@ public class DatabaseConnectionTask extends AsyncTask<NumberPlate, String, Strin
     }
 
     @Override
-    protected void onPostExecute(String result) {
+    protected void onPostExecute(JSONObject json) {
         if(mTaskCallback == null) { return; }
         if(mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
             mProgressDialog = null;
         }
 
-        mTaskCallback.onTaskComplete();
+        mTaskCallback.onTaskComplete(json);
 
     }
 }

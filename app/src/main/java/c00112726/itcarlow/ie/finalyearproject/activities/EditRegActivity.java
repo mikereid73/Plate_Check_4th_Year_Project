@@ -12,13 +12,15 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 import java.io.File;
 
 import c00112726.itcarlow.ie.finalyearproject.R;
 import c00112726.itcarlow.ie.finalyearproject.misc.NumberPlate;
 import c00112726.itcarlow.ie.finalyearproject.misc.Util;
 import c00112726.itcarlow.ie.finalyearproject.tasks.DatabaseConnectionTask;
-import c00112726.itcarlow.ie.finalyearproject.tasks.TaskCallback;
+import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.TaskCallbackJSON;
 
 /**
  * Author: Michael Reid
@@ -26,7 +28,7 @@ import c00112726.itcarlow.ie.finalyearproject.tasks.TaskCallback;
  * Email: c00112726@itcarlow.ie
  * Date: 26/03/2016
  */
-public class EditRegActivity extends AppCompatActivity implements TaskCallback {
+public class EditRegActivity extends AppCompatActivity implements TaskCallbackJSON {
 
     private EditText mNumberPlateNumber;
     private EditText mEditYear;
@@ -111,7 +113,7 @@ public class EditRegActivity extends AppCompatActivity implements TaskCallback {
     }
 
     @Override
-    public void onTaskComplete() {
+    public void onTaskComplete(JSONObject json) {
         finish();
     }
 

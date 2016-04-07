@@ -1,6 +1,7 @@
 package c00112726.itcarlow.ie.finalyearproject.processing;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import c00112726.itcarlow.ie.finalyearproject.exceptions.BadImageException;
 import c00112726.itcarlow.ie.finalyearproject.misc.NumberPlate;
 import c00112726.itcarlow.ie.finalyearproject.processing.template.ImageTemplate;
 import c00112726.itcarlow.ie.finalyearproject.processing.template.ImageTemplates;
@@ -77,7 +79,7 @@ public class OpenCvImageProcessor {
                 Imgproc.THRESH_BINARY_INV
         );
 
-        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
+        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(6, 6));
         Imgproc.morphologyEx(
                 output,
                 output,
@@ -123,7 +125,7 @@ public class OpenCvImageProcessor {
         return boundingBoxes;
     }
 
-    public static Map<String, List<Mat>> segmentImage(Mat processedImage) {
+    public static Map<String, List<Mat>> segmentImage(Mat processedImage) throws BadImageException {
         List<MatOfPoint> contours = new ArrayList<>();
         Imgproc.findContours(
                 processedImage.clone(),
@@ -132,9 +134,15 @@ public class OpenCvImageProcessor {
                 Imgproc.RETR_EXTERNAL,        // ignore contours within contours
                 Imgproc.CHAIN_APPROX_NONE
         );
-
+        if(contours.size() <= 0) {
+            throw new BadImageException("No contours were detected");
+        }
 
         List<Rect> boundingBoxes = getBoundingBoxes(contours);
+        if(boundingBoxes.size() <= 0) {
+            throw new BadImageException("No bounding boxes were detected");
+        }
+
         List<Mat> segmentedImages = new ArrayList<>();
 
         for (int i = 0; i < boundingBoxes.size(); i++) {
@@ -205,15 +213,21 @@ public class OpenCvImageProcessor {
             secondBiggestGapIndex = temp;
         }
 
-        List<Mat> year = mats.subList(0, biggestGapIndex);
-        List<Mat> county = mats.subList(biggestGapIndex, secondBiggestGapIndex);
-        List<Mat> reg = mats.subList(secondBiggestGapIndex, mats.size());
+        try {
+            List<Mat> year = mats.subList(0, biggestGapIndex);
+            List<Mat> county = mats.subList(biggestGapIndex, secondBiggestGapIndex);
+            List<Mat> reg = mats.subList(secondBiggestGapIndex, mats.size());
 
-        Map<String, List<Mat>> fullRegSplit = new HashMap<>();
-        fullRegSplit.put("year", year);
-        fullRegSplit.put("county", county);
-        fullRegSplit.put("reg", reg);
-        return fullRegSplit;
+            Map<String, List<Mat>> fullRegSplit = new HashMap<>();
+            fullRegSplit.put("year", year);
+            fullRegSplit.put("county", county);
+            fullRegSplit.put("reg", reg);
+            return fullRegSplit;
+        }
+        catch (Exception e) {
+            Log.e("Reg Split Failed", e.getMessage());
+            return null;
+        }
     }
 
     public static String matchLetters(List<Mat> mats, ImageTemplates imageTemplates) {

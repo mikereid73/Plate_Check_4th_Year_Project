@@ -1,8 +1,11 @@
 package c00112726.itcarlow.ie.finalyearproject.activities;
 
 
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -10,12 +13,20 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import org.json.JSONObject;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.OpenCVLoader;
 
+import java.io.File;
+
 import c00112726.itcarlow.ie.finalyearproject.R;
+import c00112726.itcarlow.ie.finalyearproject.misc.NumberPlate;
+import c00112726.itcarlow.ie.finalyearproject.misc.Util;
+import c00112726.itcarlow.ie.finalyearproject.tasks.DatabaseConnectionTask;
+import c00112726.itcarlow.ie.finalyearproject.tasks.ProcessImageTask;
 import c00112726.itcarlow.ie.finalyearproject.tasks.SaveImageTask;
-import c00112726.itcarlow.ie.finalyearproject.tasks.TaskCallback;
+import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.TaskCallback;
+import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.TaskCallbackJSON;
 
 /**
  * Author: Michael Reid
@@ -23,7 +34,7 @@ import c00112726.itcarlow.ie.finalyearproject.tasks.TaskCallback;
  * Email: c00112726@itcarlow.ie
  * Date: 03/02/2016
  */
-public class CameraActivity extends AppCompatActivity implements TaskCallback {
+public class CameraActivity extends AppCompatActivity implements TaskCallback, TaskCallbackJSON {
 
     private static final String TAG = "CameraActivity";
 
@@ -81,7 +92,7 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback {
         mBackgroundTaskRunning = false;
 
         // Attempt to load OpenCV from OpenCV Manager. This will eventually be removed.
-        if(!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mOpenCVCallback)) {
+        if(!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mOpenCVCallback)) {
             Log.e(TAG, "Cannot connect to OpenCV Manager");
         }
         else {
@@ -140,11 +151,94 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback {
         return camera;
     }
 
-    @Override
-    public void onTaskComplete() {
-        Toast.makeText(CameraActivity.this, "Complete", Toast.LENGTH_SHORT).show();
+    private void startCamera() {
         mCanTakePicture = true;
-        mBackgroundTaskRunning = false;
         mCamera.startPreview();
+    }
+
+    @Override
+    public void onTaskComplete(JSONObject json) {
+        Toast.makeText(CameraActivity.this, "Complete", Toast.LENGTH_SHORT).show();
+        startCamera();
+    }
+
+    @Override
+    public void onTaskComplete(NumberPlate numberPlate) {
+        if(numberPlate == null) {
+            String message = getString(R.string.segment_failed);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
+            startCamera();
+            return;
+        }
+        showConfirmationDialog(numberPlate);
+    }
+
+    @Override
+    public void onTaskComplete(File file) {
+        if(file == null) {
+            Util.showToast(this, "Save Failed.", Toast.LENGTH_SHORT);
+            return;
+        }
+
+        imageFile = file;
+        notifyDeviceOfNewFile(file);
+
+        ProcessImageTask pit = new ProcessImageTask(this);
+        pit.execute(new File(file.getAbsolutePath()));
+    }
+
+    private void notifyDeviceOfNewFile(File file) {
+        final Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        final Uri contentUri = Uri.fromFile(file);
+        mediaScanIntent.setData(contentUri);
+        sendBroadcast(mediaScanIntent);
+    }
+
+    private File imageFile;
+    private void showConfirmationDialog(final NumberPlate numberPlate) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Result Validation");
+        builder.setMessage("Number Plate: " + numberPlate.toString() + "\nEdit or Continue?");
+        builder.setCancelable(false);
+        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                startCamera();
+            }
+        });
+        builder.setNegativeButton("Edit", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                editClick(numberPlate);
+            }
+        });
+        builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                okClick(numberPlate);
+            }
+        });
+
+        builder.show();
+    }
+
+    private void okClick(NumberPlate numberPlate) {
+        if(Util.isNetworkAvailable(this)) {
+            DatabaseConnectionTask dbt = new DatabaseConnectionTask(this);
+            dbt.execute(numberPlate);
+        }
+        else {
+            String message = this.getString(R.string.no_network_1);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
+        }
+    }
+
+    private void editClick(NumberPlate numberPlate) {
+        Intent intent = new Intent(this, EditRegActivity.class);
+        intent.putExtra("number plate", numberPlate);
+        intent.putExtra("image file", imageFile);
+        this.startActivity(intent);
     }
 }

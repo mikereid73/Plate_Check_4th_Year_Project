@@ -12,6 +12,8 @@
     <string name="login_text">Login</string>
     <string name="email_text">Email</string>
     <string name="password_text">Password</string>
+    <string name="login_success">Login Success</string>
+    <string name="login_fail">Login Failed</string>
 
     <!-- Strings related to main menu -->
     <string name="start_ocr">Start Session</string>
@@ -24,6 +26,8 @@
     <string name="confirm_password">Confirm New Password</string>
     <string name="change_password">Change Password</string>
     <string name="cancel">Cancel</string>
+    <string name="password_change_success">Password was successfully changed</string>
+    <string name="password_change_fail">Password change failed</string>
 
     <!-- Strings related to settings -->
     <string name="advanced_settings">Advance Settings</string>
@@ -35,4 +39,7 @@
 
     <!-- Debug stuff -->
     <string name="not_implemented">Feature currently unavailable</string>
+    <string name="bad_json">Bad JSON format. Contact an admin.</string>
+    <string name="null_json">Return JSON was null</string>
+    <string name="segment_failed">Segmentation failed</string>
 </resources>

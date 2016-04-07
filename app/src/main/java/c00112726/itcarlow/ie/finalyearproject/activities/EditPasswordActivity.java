@@ -10,14 +10,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import c00112726.itcarlow.ie.finalyearproject.R;
 import c00112726.itcarlow.ie.finalyearproject.misc.Util;
 import c00112726.itcarlow.ie.finalyearproject.tasks.ChangePasswordTask;
-import c00112726.itcarlow.ie.finalyearproject.tasks.TaskCallback;
-import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.ChangePasswordCallback;
+import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.TaskCallbackJSON;
 
 /**
  * Author: Michael Reid.
@@ -25,7 +23,7 @@ import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.ChangePasswordCall
  * Email: c00112726@itcarlow.ie
  * Date: 05/04/2016
  */
-public class EditPasswordActivity extends AppCompatActivity implements ChangePasswordCallback {
+public class EditPasswordActivity extends AppCompatActivity implements TaskCallbackJSON {
 
     private static final String TAG = "EditPasswordActivity";
 
@@ -108,20 +106,28 @@ public class EditPasswordActivity extends AppCompatActivity implements ChangePas
     }
 
     @Override
-    public void onChangePasswordComplete(JSONObject result) {
+    public void onTaskComplete(JSONObject json) {
+        if(json == null) {
+            String message = getString(R.string.null_json);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
+            return;
+        }
         try {
-            String response = (result != null ? result.getString("success") : "false");
+            String response = json.getString("success");
             if(Boolean.parseBoolean(response)) {
-                Toast.makeText(this, "Change successful", Toast.LENGTH_SHORT).show();
+                String message = getString(R.string.password_change_success);
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
                 finish();
             }
             else {
-                String reason = (result != null ? result.getString("reason") : "unknown");
-                Toast.makeText(this, "Change failed\n" + reason, Toast.LENGTH_SHORT).show();
+                String reason = (json.getString("reason")) + "\n";
+                String message = getString(R.string.password_change_fail);
+                Toast.makeText(this, message + reason, Toast.LENGTH_SHORT).show();
             }
-        } catch (JSONException e) {
-            Log.wtf(TAG, e.getMessage());
-            Toast.makeText(this, "Fatal Error", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            String message = getString(R.string.bad_json);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
+            Log.e(TAG, e.getMessage());
         }
     }
 }
