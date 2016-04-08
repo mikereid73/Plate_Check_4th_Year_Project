@@ -1,10 +1,10 @@
 package c00112726.itcarlow.ie.finalyearproject.activities;
 
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Camera;
+import android.hardware.Camera.PictureCallback;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -34,24 +34,20 @@ import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.TaskCallbackJSON;
  * Email: c00112726@itcarlow.ie
  * Date: 03/02/2016
  */
+@SuppressWarnings("deprecation")
 public class CameraActivity extends AppCompatActivity implements TaskCallback, TaskCallbackJSON {
 
     private static final String TAG = "CameraActivity";
 
     protected CameraPreview mCameraPreview;
-
     protected Camera mCamera;
-
     protected FrameLayout mPreview;
-
     protected boolean mCanTakePicture;
-    protected boolean mBackgroundTaskRunning;
 
-    protected Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {
+    protected PictureCallback mPictureCallback = new PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             mCamera.stopPreview();
-            mBackgroundTaskRunning = true;
             SaveImageTask task = new SaveImageTask(CameraActivity.this, mCameraPreview);
             task.execute(data);
         }
@@ -89,7 +85,6 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         mPreview.setOnClickListener(mPreviewOnClickListener);
 
         mCanTakePicture = true;
-        mBackgroundTaskRunning = false;
 
         // Attempt to load OpenCV from OpenCV Manager. This will eventually be removed.
         if(!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mOpenCVCallback)) {
@@ -135,9 +130,7 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         }
 
         mCanTakePicture = true;
-        //if(!mBackgroundTaskRunning){
-            mCamera.startPreview();
-        //}
+        mCamera.startPreview();
     }
 
     private Camera getCameraInstance() {
@@ -167,8 +160,7 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         if(numberPlate == null) {
             String message = getString(R.string.segment_failed);
             Util.showToast(this, message, Toast.LENGTH_SHORT);
-            startCamera();
-            return;
+            numberPlate = new NumberPlate();
         }
         showConfirmationDialog(numberPlate);
     }
@@ -184,8 +176,8 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         notifyDeviceOfNewFile(file);
 
         ProcessImageTask pit = new ProcessImageTask(this);
-        pit.execute(new File(file.getAbsolutePath()));
-    }
+        pit.execute(file);
+}
 
     private void notifyDeviceOfNewFile(File file) {
         final Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
@@ -232,6 +224,7 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         else {
             String message = this.getString(R.string.no_network_1);
             Util.showToast(this, message, Toast.LENGTH_SHORT);
+            startCamera();
         }
     }
 

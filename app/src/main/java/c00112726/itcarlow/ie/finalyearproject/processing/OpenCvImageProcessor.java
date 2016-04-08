@@ -32,6 +32,13 @@ import c00112726.itcarlow.ie.finalyearproject.processing.template.ImageTemplates
  */
 public class OpenCvImageProcessor {
 
+    private static int BLUR_WIDTH;
+    private static int BLUR_HEIGHT;
+    private static int BLUR_DISTRIBUTION;
+
+    private static int IMAGE_OPEN_WIDTH;
+    private static int IMAGE_OPEN_HEIGHT;
+
     private OpenCvImageProcessor() {
     }
 
@@ -41,16 +48,6 @@ public class OpenCvImageProcessor {
         Mat output = new Mat(height, width, type);
 
         Utils.bitmapToMat(input, output);
-
-        return output;
-    }
-
-    public static Bitmap matToBitmap(Mat input, Bitmap.Config config) {
-        int width = input.cols();
-        int height = input.rows();
-        Bitmap output = Bitmap.createBitmap(width, height, config);
-
-        Utils.matToBitmap(input, output);
 
         return output;
     }
@@ -68,7 +65,7 @@ public class OpenCvImageProcessor {
                 new Mat(), // we don't care about changing any Mats, we want the return value
                 0,
                 255,
-                Imgproc.THRESH_OTSU // Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU
+                Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU // Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU
         );
 
         Imgproc.threshold(
@@ -87,16 +84,6 @@ public class OpenCvImageProcessor {
                 element
 
         );
-        Core.bitwise_not(output, output);
-
-        Imgproc.morphologyEx(
-                output,
-                output,
-                Imgproc.MORPH_OPEN,
-                element
-        );
-        Core.bitwise_not(output, output);
-
         return output;
     }
 
@@ -112,7 +99,7 @@ public class OpenCvImageProcessor {
             final float aspect = 36.0f / 70.0f;
             final float error = 0.55f;
             final float minHeight = 50;
-            final float minAspect = 0.05f;
+            final float minAspect = 0.01f;
             final float maxAspect = aspect + aspect * error;
 
             if (!(charAspect >= minAspect && charAspect <= maxAspect && box.height >= minHeight)) {

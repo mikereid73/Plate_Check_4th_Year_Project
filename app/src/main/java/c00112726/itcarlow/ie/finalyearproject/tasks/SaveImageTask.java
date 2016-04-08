@@ -55,9 +55,9 @@ public class SaveImageTask extends AsyncTask<byte[], String, File> {
 
         File imageFile = createOutputPictureFile();
         if(imageFile == null) {
+            Log.e(TAG, "No file created");
             return null;
         }
-
         try {
             Bitmap image = BitmapFactory.decodeByteArray(data[0], 0, data[0].length);
             Bitmap croppedImage = cropImage(image);
@@ -65,24 +65,21 @@ public class SaveImageTask extends AsyncTask<byte[], String, File> {
             croppedImage.compress(Bitmap.CompressFormat.JPEG, 100, out);
             out.flush();
             out.close();
+            return imageFile;
         } catch (IOException e) {
-            Log.i("HERE", "Yes, No?");
-            e.printStackTrace();
-            //Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.getMessage());
+            return null;
         }
-
-        return imageFile;
     }
 
     @Override
-    public void onPostExecute(File imageFile) {
+    public void onPostExecute(File file) {
         if(mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
 
-
         if(mTaskCallback != null) {
-            mTaskCallback.onTaskComplete(imageFile);
+            mTaskCallback.onTaskComplete(file);
         }
     }
 
@@ -92,7 +89,7 @@ public class SaveImageTask extends AsyncTask<byte[], String, File> {
         // If the default save directory doesn't exist, try and create it
         if (!imageStorageDirectory.exists()){
             if (!imageStorageDirectory.mkdirs()){
-                //Log.e(TAG, "Required media storage does not exist");
+                Log.e(TAG, "Required media storage does not exist");
                 return null;
             }
         }

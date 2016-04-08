@@ -23,6 +23,7 @@ import java.util.List;
  * Email: c00112726@itcarlow.ie
  * Date: 03/02/2016
  */
+@SuppressWarnings("deprecation")
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = " CameraPrevie Activity";
@@ -67,7 +68,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.setPreviewDisplay(mSurfaceHolder);
             mCamera.startPreview();
         } catch (Exception e) {
-            Log.e(TAG, "Failed in surfaceCreated. " + e.getMessage());
+            Log.e(TAG, e.getMessage());
         }
         mOrientationListener.enable();
     }
@@ -188,14 +189,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         int rectW = (int) (width * 0.50f);
         int rectH = (int) (rectW / RATIO);
 
-        Rect guideBox = new Rect(
+        return new Rect(
                 (width / 2 - rectW / 2),
                 (height / 2 - rectH / 2),
                 (width - (width / 2 - rectW / 2)),
                 (height - (height / 2 - rectH / 2))
         );
-
-        return guideBox;
     }
 
     private void setCamera(Camera camera) {
@@ -233,28 +232,5 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public Rect getGuideBox() {
         return mGuideBox == null ? createGuideBox() : mGuideBox;
-    }
-
-    public Rect getCameraNativeResolution() {
-        Camera.Parameters parameters = mCamera.getParameters();
-        Camera.Size size = parameters.getPictureSize();
-        final int width = size.width;
-        final int height = size.height;
-        return new Rect(0, 0, width, height);
-    }
-
-    public Rect getDisplayResolution() {
-        if(mPreviewSize == null) {
-            return null;
-        }
-        final int width = mPreviewSize.width;
-        final int height = mPreviewSize.height;
-        return new Rect(0, 0, width, height);
-    }
-
-    public Rect getGuideBoxResolution() {
-        final int width = mGuideBox.width();
-        final int height = mGuideBox.height();
-        return new Rect(0, 0, width, height);
     }
 }

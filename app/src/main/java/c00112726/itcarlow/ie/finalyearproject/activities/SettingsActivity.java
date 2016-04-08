@@ -21,8 +21,10 @@ public class SettingsActivity extends AppCompatActivity {
         advanceSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String message = getString(R.string.not_implemented);
-                Util.showToast(SettingsActivity.this, message, Toast.LENGTH_SHORT);
+                //String message = getString(R.string.not_implemented);
+                //Util.showToast(SettingsActivity.this, message, Toast.LENGTH_SHORT);
+                Intent intent = new Intent(SettingsActivity.this, ProcessingSettingsActivity.class);
+                startActivity(intent);
             }
         });
 

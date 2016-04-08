@@ -15,6 +15,10 @@ public class NumberPlate implements Serializable {
     private String reg;
     private String wrongGuess;
 
+    public NumberPlate() {
+        this("","","");
+    }
+
     public NumberPlate(String year, String county, String reg) {
         this.year = year;
         this.county = county;
