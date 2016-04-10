@@ -4,10 +4,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.media.ExifInterface;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
+import android.view.Surface;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -63,6 +66,9 @@ public class SaveImageTask extends AsyncTask<byte[], String, File> {
             Bitmap croppedImage = cropImage(image);
             FileOutputStream out = new FileOutputStream(imageFile);
             croppedImage.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            croppedImage = correctRotation(croppedImage, imageFile.getAbsolutePath());
+            croppedImage.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
             out.flush();
             out.close();
             return imageFile;
@@ -121,5 +127,51 @@ public class SaveImageTask extends AsyncTask<byte[], String, File> {
         int cropHeight          = (int)(guideBox.height() * heightRatio);
 
         return Bitmap.createBitmap(image, cropX, cropY, cropWidth, cropHeight);
+    }
+
+    private Bitmap correctRotation(Bitmap image, String path) {
+        try {
+            ExifInterface exif = new ExifInterface(path);
+            int exifOrientation = exif.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL);
+
+            Log.v(TAG, "Orient: " + exifOrientation);
+
+            int rotate = 0;
+
+            switch (exifOrientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotate = 0;
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotate = 180;
+                    break;
+            }
+
+            Log.v(TAG, "Rotation: " + rotate);
+
+            if (rotate != 0) {
+
+                // Getting width & height of the given image.
+                int w = image.getWidth();
+                int h = image.getHeight();
+
+                // Setting pre rotate
+                Matrix mtx = new Matrix();
+                mtx.preRotate(rotate);
+
+                // Rotating Bitmap
+                image = Bitmap.createBitmap(image, 0, 0, w, h, mtx, false);
+            }
+
+            // Convert to ARGB_8888, required by tess
+            return image.copy(Bitmap.Config.ARGB_8888, true);
+
+        } catch (IOException e) {
+            Log.e(TAG, "Couldn't correct orientation: " + e.toString());
+        }
+        return image;
     }
 }

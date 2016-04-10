@@ -17,5 +17,6 @@ public class ProcessingSettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_processing_settings);
+        setTitle("Pre-processing Settings");
     }
 }

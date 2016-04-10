@@ -15,7 +15,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Author: Michael Reid
@@ -26,13 +25,11 @@ import java.util.List;
 @SuppressWarnings("deprecation")
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
-    private static final String TAG = " CameraPrevie Activity";
+    private static final String TAG = " CameraPreview";
 
     protected SurfaceHolder mSurfaceHolder;
     protected Camera mCamera;
     protected Context mContext;
-    protected Camera.Size mPreviewSize;
-    protected List<Camera.Size> mSupportedPreviewSizes;
 
     protected OrientationEventListener mOrientationListener;
 
@@ -75,33 +72,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        if(mSurfaceHolder.getSurface() == null) { return; }
-
-        try {
-            mCamera.stopPreview();
-            mCamera.setPreviewDisplay(mSurfaceHolder);
-            mCamera.startPreview();
-        } catch (Exception e) {
-            Log.e(TAG, "Failed in surfaceCreated. " + e.getMessage());
-        }
-
         mGuideBox = createGuideBox();
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         mOrientationListener.disable();
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
-        final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
-        setMeasuredDimension(width, height);
-
-        if (mSupportedPreviewSizes != null) {
-            mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
-        }
     }
 
     @Override
@@ -118,39 +94,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         guideBoxPaintDetails.setColor(Color.YELLOW);
         guideBoxPaintDetails.setStrokeWidth(7.0f);
         canvas.drawRect(mGuideBox, guideBoxPaintDetails);
-    }
-
-    private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int width, int height)
-    {
-        final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio = (double) width / height;
-        if (sizes == null) return null;
-
-        Camera.Size optimalSize = null;
-        double minDiff = Double.MAX_VALUE;
-
-        int targetHeight = height;
-
-        // Try to find an size match aspect ratio and size
-        for (Camera.Size size : sizes) {
-            double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
-            if (Math.abs(size.height - targetHeight) < minDiff) {
-                optimalSize = size;
-                minDiff = Math.abs(size.height - targetHeight);
-            }
-        }
-        // Cannot find the one match the aspect ratio, ignore the requirement
-        if (optimalSize == null) {
-            minDiff = Double.MAX_VALUE;
-            for (Camera.Size size : sizes) {
-                if (Math.abs(size.height - targetHeight) < minDiff) {
-                    optimalSize = size;
-                    minDiff = Math.abs(size.height - targetHeight);
-                }
-            }
-        }
-        return optimalSize;
     }
 
     private void setCameraDisplayOrientation() {
@@ -172,7 +115,16 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // Adjust the CameraPreview rotation
         Camera.Parameters params = mCamera.getParameters();
         params.setRotation(degrees);
-        mCamera.setParameters(params);
+        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        }
+        //params.setPictureSize(getWidth(), getHeight());
+        try {
+            mCamera.setParameters(params);
+        }
+        catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     private Rect createGuideBox() {
@@ -207,27 +159,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
 
         mCamera = camera;
-
-        if (mCamera != null) {
-            Camera.Parameters params = mCamera.getParameters();
-
-            mSupportedPreviewSizes = params.getSupportedPreviewSizes();
-
-            if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
-                params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-                mCamera.setParameters(params);
-            }
-
-            requestLayout();
-
-            try {
-                mCamera.setPreviewDisplay(mSurfaceHolder);
-                mCamera.startPreview();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            mCamera.setPreviewDisplay(mSurfaceHolder);
+            mCamera.startPreview();
         }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public Rect getGuideBox() {

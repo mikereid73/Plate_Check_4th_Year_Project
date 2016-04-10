@@ -20,8 +20,7 @@
             android:layout_marginTop="24dp"
             android:layout_marginBottom="24dp"
             android:padding="12dp"
-            android:text="@string/advanced_settings"
-            android:background="@android:color/transparent"/>
+            android:text="@string/advanced_settings"/>
 
         <Button
             android:id="@+id/btn_change_password"
@@ -30,8 +29,7 @@
             android:layout_marginTop="24dp"
             android:layout_marginBottom="24dp"
             android:padding="12dp"
-            android:text="@string/change_password"
-            android:background="@android:color/transparent"/>
+            android:text="@string/change_password"/>
 
         </LinearLayout>
 

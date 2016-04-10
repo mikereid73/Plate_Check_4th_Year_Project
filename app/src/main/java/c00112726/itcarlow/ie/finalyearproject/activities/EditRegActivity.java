@@ -6,12 +6,14 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -29,6 +31,8 @@ import c00112726.itcarlow.ie.finalyearproject.tasks.callbacks.TaskCallbackJSON;
  * Date: 26/03/2016
  */
 public class EditRegActivity extends AppCompatActivity implements TaskCallbackJSON {
+
+    private static final String TAG = "EditRegActivity";
 
     private EditText mNumberPlateNumber;
     private EditText mEditYear;
@@ -114,6 +118,31 @@ public class EditRegActivity extends AppCompatActivity implements TaskCallbackJS
 
     @Override
     public void onTaskComplete(JSONObject json) {
+        if(json == null) {
+            String message = getString(R.string.null_json);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
+            return;
+        }
+        String KEY_REGISTRATION = "registration";
+        String KEY_INFRACTION = "infraction";
+        try {
+            String infraction = json.getString(KEY_INFRACTION);
+            String registration = json.getString(KEY_REGISTRATION);
+            if(Boolean.parseBoolean(infraction)) {
+                String message = getString(R.string.infraction_occured);
+                message += "\nRegistration: " + registration;
+                Util.showToast(this, message, Toast.LENGTH_LONG);
+            }
+            else {
+                String message = getString(R.string.no_infraction);
+                message += "\nRegistration: " + registration;
+                Util.showToast(this, message, Toast.LENGTH_LONG);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+            String message = getString(R.string.bad_json);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
+        }
         finish();
     }
 

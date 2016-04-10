@@ -34,8 +34,7 @@ android:fitsSystemWindows="true">
                 android:gravity="center"
                 android:editable="false"
                 android:textIsSelectable="false"
-                android:focusable="false"
-                android:background="@android:color/transparent"/>
+                android:focusable="false"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -60,8 +59,7 @@ android:fitsSystemWindows="true">
                 android:id="@+id/county"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:inputType="textFilter|textCapCharacters"/>
+                android:gravity="center"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -78,7 +76,6 @@ android:fitsSystemWindows="true">
 
         </LinearLayout>
 
-
         <Button
             android:id="@+id/ok"
             android:layout_width="wrap_content"
@@ -86,8 +83,7 @@ android:fitsSystemWindows="true">
             android:text="Continue"
             android:layout_gravity="end"
             android:layout_alignTop="@+id/cancel"
-            android:layout_alignParentEnd="true"
-            android:background="?android:attr/selectableItemBackground"/>
+            android:layout_alignParentEnd="true"/>
 
         <Button
             android:id="@+id/cancel"
@@ -95,8 +91,7 @@ android:fitsSystemWindows="true">
             android:layout_height="wrap_content"
             android:text="Cancel"
             android:layout_below="@+id/editArea"
-            android:layout_alignParentStart="true"
-            android:background="?android:attr/selectableItemBackground"/>
+            android:layout_alignParentStart="true"/>
 
     </RelativeLayout>
 </ScrollView>

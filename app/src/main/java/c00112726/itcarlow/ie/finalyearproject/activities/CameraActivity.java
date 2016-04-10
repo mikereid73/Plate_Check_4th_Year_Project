@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.OpenCVLoader;
@@ -151,7 +152,32 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
 
     @Override
     public void onTaskComplete(JSONObject json) {
-        Toast.makeText(CameraActivity.this, "Complete", Toast.LENGTH_SHORT).show();
+        if(json == null) {
+            String message = getString(R.string.null_json);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
+            startCamera();
+            return;
+        }
+        String KEY_REGISTRATION = "registration";
+        String KEY_INFRACTION = "infraction";
+        try {
+            String infraction = json.getString(KEY_INFRACTION);
+            String registration = json.getString(KEY_REGISTRATION);
+            if(Boolean.parseBoolean(infraction)) {
+                String message = getString(R.string.infraction_occured);
+                message += "\nRegistration: " + registration;
+                Util.showToast(this, message, Toast.LENGTH_LONG);
+            }
+            else {
+                String message = getString(R.string.no_infraction);
+                message += "\nRegistration: " + registration;
+                Util.showToast(this, message, Toast.LENGTH_LONG);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+            String message = getString(R.string.bad_json);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
+        }
         startCamera();
     }
 
