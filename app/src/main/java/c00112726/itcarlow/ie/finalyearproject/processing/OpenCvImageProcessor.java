@@ -236,12 +236,12 @@ public class OpenCvImageProcessor {
         }
     }
 
-    public static String matchLetters(List<Mat> mats, ImageTemplates imageTemplates) {
+    public static String matchLetters(List<Mat> segmentedImages, ImageTemplates imageTemplates) {
         final List<ImageTemplate> letterTemplates = imageTemplates.getLetterTemplates();
         final StringBuilder sb = new StringBuilder();
 
-        for(int x = 0; x < mats.size(); x++) {
-            Mat current = mats.get(x).clone();
+        for(int x = 0; x < segmentedImages.size(); x++) {
+            Mat current = segmentedImages.get(x).clone();
             Imgproc.resize(current, current, new Size(TARGET_CHAR_WIDTH, TARGET_CHAR_HEIGHT));
 
             double bestMatchAccuracy = 0;
@@ -270,12 +270,12 @@ public class OpenCvImageProcessor {
         return sb.toString();
     }
 
-    public static String matchNumbers(List<Mat> segementedImages, ImageTemplates imageTemplates) {
+    public static String matchNumbers(List<Mat> segmentedImages, ImageTemplates imageTemplates) {
         final List<ImageTemplate> numberTemplates = imageTemplates.getNumberTemplates();
         final StringBuilder sb = new StringBuilder();
 
-        for(int x = 0; x < segementedImages.size(); x++) {
-            Mat current = segementedImages.get(x).clone(); // clone to avoid changing original size
+        for(int x = 0; x < segmentedImages.size(); x++) {
+            Mat current = segmentedImages.get(x).clone(); // clone to avoid changing original size
             Imgproc.resize(current, current, new Size(TARGET_CHAR_WIDTH, TARGET_CHAR_HEIGHT));
 
             double bestMatchAccuracy = 0;
