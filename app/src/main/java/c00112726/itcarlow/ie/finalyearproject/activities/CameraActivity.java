@@ -44,7 +44,12 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
     protected Camera mCamera;
     protected FrameLayout mPreview;
     protected boolean mCanTakePicture;
+    private File imageFile;
 
+    /**
+     * Callback which is called when the camera is told to take a picture.
+     * From here, we spawn an AsyncTask to perform the save.
+     */
     protected PictureCallback mPictureCallback = new PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
@@ -54,6 +59,10 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         }
     };
 
+    /**
+     * Define what happens when the screen is tapped.
+     * In this case, we tell the camera to take a picture
+     */
     protected View.OnClickListener mPreviewOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -64,6 +73,11 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         }
     };
 
+    /**
+     * A callback used to link the app with OpenCV manager.
+     * In the case it is not installed, the option to install it
+     * will be presented.
+     */
     protected BaseLoaderCallback mOpenCVCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -87,7 +101,7 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
 
         mCanTakePicture = true;
 
-        // Attempt to load OpenCV from OpenCV Manager. This will eventually be removed.
+        // Attempt to load OpenCV from OpenCV Manager.
         if(!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mOpenCVCallback)) {
             Log.e(TAG, "Cannot connect to OpenCV Manager");
         }
@@ -134,6 +148,10 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         mCamera.startPreview();
     }
 
+    /**
+     * Safe method to open the camera
+     * @return the device camera
+     */
     private Camera getCameraInstance() {
         Camera camera = null;
         try {
@@ -150,10 +168,15 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         mCamera.startPreview();
     }
 
+    /**
+     * Callback called by an AsyncTask to inform the Activity that it
+     * has finished it's task. Allows the Activity to decide what to do next.
+     * @param json The JSON result from the Web API
+     */
     @Override
     public void onTaskComplete(JSONObject json) {
         if(json == null) {
-            String message = getString(R.string.null_json);
+            String message = getString(R.string.connect_failed);
             Util.showToast(this, message, Toast.LENGTH_SHORT);
             startCamera();
             return;
@@ -165,12 +188,12 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
             String registration = json.getString(KEY_REGISTRATION);
             if(Boolean.parseBoolean(infraction)) {
                 String message = getString(R.string.infraction_occured);
-                message += "\nRegistration: " + registration;
+                message +=  "\n" + getString(R.string.registration) + registration;
                 Util.showToast(this, message, Toast.LENGTH_LONG);
             }
             else {
                 String message = getString(R.string.no_infraction);
-                message += "\nRegistration: " + registration;
+                message += "\n" + getString(R.string.registration) + registration;
                 Util.showToast(this, message, Toast.LENGTH_LONG);
             }
         } catch (JSONException e) {
@@ -181,6 +204,11 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         startCamera();
     }
 
+    /**
+     * Callback called by an AsyncTask to inform the Activity that it
+     * has finished it's task. Allows the Activity to decide what to do next.
+     * @param numberPlate The OCR result of the ImageProcessing
+     */
     @Override
     public void onTaskComplete(NumberPlate numberPlate) {
         if(numberPlate == null) {
@@ -191,10 +219,16 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         showConfirmationDialog(numberPlate);
     }
 
+    /**
+     * Callback called by an AsyncTask to inform the Activity that it
+     * has finished it's task. Allows the Activity to decide what to do next.
+     * @param file The file where the image was saved
+     */
     @Override
     public void onTaskComplete(File file) {
         if(file == null) {
-            Util.showToast(this, "Save Failed.", Toast.LENGTH_SHORT);
+            String message = getString(R.string.save_fail);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
             return;
         }
 
@@ -205,6 +239,10 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         pit.execute(file);
 }
 
+    /**
+     * Inform device a new file has been saved to it
+     * @param file the new file
+     */
     private void notifyDeviceOfNewFile(File file) {
         final Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         final Uri contentUri = Uri.fromFile(file);
@@ -212,27 +250,33 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         sendBroadcast(mediaScanIntent);
     }
 
-    private File imageFile;
+    /**
+     * Display a confirmation dialog to validate the OCR result
+     * @param numberPlate The OCR result of the ImageProcessing
+     */
     private void showConfirmationDialog(final NumberPlate numberPlate) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Result Validation");
-        builder.setMessage("Number Plate: " + numberPlate.toString() + "\nEdit or Continue?");
+        builder.setTitle(R.string.result_validate);
+        builder.setMessage(getString(R.string.number_plate) +
+                numberPlate.toString() + "\n" +
+                getString(R.string.edit_continue));
         builder.setCancelable(false);
-        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNeutralButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
                 startCamera();
             }
         });
-        builder.setNegativeButton("Edit", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(getString(R.string.edit), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 editClick(numberPlate);
             }
         });
-        builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.continue_str),
+                new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 okClick(numberPlate);
@@ -242,22 +286,30 @@ public class CameraActivity extends AppCompatActivity implements TaskCallback, T
         builder.show();
     }
 
+    /**
+     * Called when the user validates the reg. Sends OCR result to database.
+     * @param numberPlate The OCR result of the ImageProcessing
+     */
     private void okClick(NumberPlate numberPlate) {
         if(Util.isNetworkAvailable(this)) {
             DatabaseConnectionTask dbt = new DatabaseConnectionTask(this);
             dbt.execute(numberPlate);
         }
         else {
-            String message = this.getString(R.string.no_network_1);
+            String message = getString(R.string.no_network_1);
             Util.showToast(this, message, Toast.LENGTH_SHORT);
             startCamera();
         }
     }
 
+    /**
+     * Called when the user want to edit the reg. Starts new activity
+     * @param numberPlate The OCR result of the ImageProcessing
+     */
     private void editClick(NumberPlate numberPlate) {
         Intent intent = new Intent(this, EditRegActivity.class);
         intent.putExtra("number plate", numberPlate);
         intent.putExtra("image file", imageFile);
-        this.startActivity(intent);
+        startActivity(intent);
     }
 }

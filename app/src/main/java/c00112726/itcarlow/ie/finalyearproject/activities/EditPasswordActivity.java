@@ -65,19 +65,23 @@ public class EditPasswordActivity extends AppCompatActivity implements TaskCallb
         String confirmPassword = String.valueOf(mConfirmNewPassword.getText()).trim();
 
         if(currentPassword.equals("") || newPassword.equals("") || confirmPassword.equals("")) {
-            showToast("One or more fields are empty");
+            String message = getString(R.string.empty_field);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
             return false;
         }
         else if(currentPassword.length() < 3 || newPassword.length() < 3 || confirmPassword.length() < 3) {
-            showToast("Password too short");
+            String message = getString(R.string.password_short);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
             return false;
         }
         else if(!newPassword.equals(confirmPassword)) {
-            showToast("New passwords don't match");
+            String message = getString(R.string.password_no_match);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
             return false;
         }
         else if(newPassword.equals(currentPassword)) {
-            showToast("New password cannot be the same as the current password");
+            String message = getString(R.string.password_same);
+            Util.showToast(this, message, Toast.LENGTH_SHORT);
             return false;
         }
         else {
@@ -101,14 +105,10 @@ public class EditPasswordActivity extends AppCompatActivity implements TaskCallb
         }
     }
 
-    private void showToast(String message) {
-        Toast.makeText(EditPasswordActivity.this, message, Toast.LENGTH_SHORT).show();
-    }
-
     @Override
     public void onTaskComplete(JSONObject json) {
         if(json == null) {
-            String message = getString(R.string.null_json);
+            String message = getString(R.string.connect_failed);
             Util.showToast(this, message, Toast.LENGTH_SHORT);
             return;
         }

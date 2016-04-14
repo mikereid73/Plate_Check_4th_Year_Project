@@ -47,7 +47,8 @@ android:fitsSystemWindows="true">
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:inputType="number"/>
+                android:inputType="number"
+                android:maxLines="1"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -59,7 +60,9 @@ android:fitsSystemWindows="true">
                 android:id="@+id/county"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:inputType="textCapCharacters"
+                android:maxLines="1"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -72,7 +75,8 @@ android:fitsSystemWindows="true">
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:inputType="number"/>
+                android:inputType="number"
+                android:maxLines="1"/>
 
         </LinearLayout>
 

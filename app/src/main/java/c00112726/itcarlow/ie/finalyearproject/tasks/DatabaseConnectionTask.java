@@ -55,8 +55,8 @@ public class DatabaseConnectionTask extends AsyncTask<NumberPlate, Void, JSONObj
             SharedPreferences sharedPreferences = ((Context)mTaskCallback).getSharedPreferences("login", Context.MODE_PRIVATE);
             String username = sharedPreferences.getString("username", "admin");
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("confirmed_reg_number", reg.toString());
-            jsonObject.put("app_guess_reg_number", reg.getWrongGuess());
+            jsonObject.put("guess", reg.getWrongGuess());
+            jsonObject.put("actual", reg.toString());
             jsonObject.put("username", username);
 
             URL url = new URL(LOGIN_URL);

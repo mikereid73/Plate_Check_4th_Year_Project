@@ -104,7 +104,7 @@ public class LoginActivity extends AppCompatActivity implements TaskCallbackJSON
     @Override
     public void onTaskComplete(JSONObject json) {
         if(json == null) {
-            String message = getString(R.string.null_json);
+            String message = getString(R.string.connect_failed);
             Util.showToast(this, message, Toast.LENGTH_SHORT);
             return;
         }

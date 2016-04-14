@@ -32,12 +32,30 @@ import c00112726.itcarlow.ie.finalyearproject.processing.template.ImageTemplates
  */
 public class OpenCvImageProcessor {
 
-    private static int BLUR_WIDTH;
+    private static final int MIN_RGB_BOUND = 0;
+    private static final int MAX_RGB_BOUND = 255;
+
+    private static final float TARGET_CHAR_WIDTH = 36.0f;
+    private static final float TARGET_CHAR_HEIGHT = 70.0f;
+    private static final float TARGET_ASPECT_RATIO = TARGET_CHAR_WIDTH / TARGET_CHAR_HEIGHT;
+    private static final float ERROR_ALLOWED = 0.55f;
+    private static final float MIN_CHAR_HEIGHT = 50.0f;
+    private static final float MAX_CHAR_HEIGHT = 100f;
+    private static final float MIN_CHAR_ASPECT = 0.05f;
+    private static final float MAX_CHAR_ASPECT = TARGET_ASPECT_RATIO + TARGET_ASPECT_RATIO * ERROR_ALLOWED;
+
+    private static final float RESIZE_WIDTH = 520;
+    private static final float RESIZE_HEIGHT = 110;
+
+    private static final float MORPH_OPEN_WIDTH = 7;
+    private static final float MORPH_OPEN_HEIGHT = 5;
+
+    /*private static int BLUR_WIDTH;
     private static int BLUR_HEIGHT;
     private static int BLUR_DISTRIBUTION;
 
     private static int IMAGE_OPEN_WIDTH;
-    private static int IMAGE_OPEN_HEIGHT;
+    private static int IMAGE_OPEN_HEIGHT;*/
 
     private OpenCvImageProcessor() {
     }
@@ -56,27 +74,30 @@ public class OpenCvImageProcessor {
         Mat input = bitmapToMat(image, CvType.CV_8UC3);
         Mat output = new Mat();
 
-        //Imgproc.GaussianBlur(input, output, new Size(3, 3), 0);
-        Imgproc.resize(input, output, new Size(520, 110));
+        Imgproc.resize(input, output, new Size(RESIZE_WIDTH, RESIZE_HEIGHT));
         Imgproc.cvtColor(output, output, Imgproc.COLOR_BGR2GRAY);
 
         double ostuValue = Imgproc.threshold(
                 output,
                 new Mat(), // we don't care about changing any Mats, we want the return value
-                0,
-                255,
-                Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU // Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU
+                MIN_RGB_BOUND,
+                MAX_RGB_BOUND,
+                Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU
         );
 
         Imgproc.threshold(
                 output,
                 output,
                 ostuValue,
-                255,
+                MAX_RGB_BOUND,
                 Imgproc.THRESH_BINARY_INV
         );
 
-        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(6, 6));
+        Mat element = Imgproc.getStructuringElement(
+                Imgproc.MORPH_RECT,
+                new Size(MORPH_OPEN_WIDTH, MORPH_OPEN_HEIGHT)
+        );
+
         Imgproc.morphologyEx(
                 output,
                 output,
@@ -96,16 +117,13 @@ public class OpenCvImageProcessor {
             Rect box = Imgproc.boundingRect(currentContour);
             float charAspect = (float)box.width / (float)box.height;
 
-            final float aspect = 36.0f / 70.0f;
-            final float error = 0.55f;
-            final float minHeight = 50;
-            final float minAspect = 0.01f;
-            final float maxAspect = aspect + aspect * error;
-
-            if (!(charAspect >= minAspect && charAspect <= maxAspect && box.height >= minHeight)) {
-                contours.remove(i--);
-            } else {
+            if (    charAspect >= MIN_CHAR_ASPECT &&
+                    charAspect <= MAX_CHAR_ASPECT &&
+                    box.height >= MIN_CHAR_HEIGHT &&
+                    box.height <= MAX_CHAR_HEIGHT) {
                 boundingBoxes.add(box);
+            } else {
+                contours.remove(i--);
             }
         }
         sort(boundingBoxes);
@@ -155,7 +173,8 @@ public class OpenCvImageProcessor {
         });
     }
 
-    public static NumberPlate performOCR(Map<String, List<Mat>> images, ImageTemplates imageTemplates) {
+    public static NumberPlate performOCR(Map<String, List<Mat>> images,
+                                         ImageTemplates imageTemplates) {
 
         List<Mat> yearImages = images.get("year");
         List<Mat> countyImages = images.get("county");
@@ -223,7 +242,7 @@ public class OpenCvImageProcessor {
 
         for(int x = 0; x < mats.size(); x++) {
             Mat current = mats.get(x).clone();
-            Imgproc.resize(current, current, new Size(36.0f, 70.0f));
+            Imgproc.resize(current, current, new Size(TARGET_CHAR_WIDTH, TARGET_CHAR_HEIGHT));
 
             double bestMatchAccuracy = 0;
             String bestMatchName = "";
@@ -257,7 +276,7 @@ public class OpenCvImageProcessor {
 
         for(int x = 0; x < segementedImages.size(); x++) {
             Mat current = segementedImages.get(x).clone(); // clone to avoid changing original size
-            Imgproc.resize(current, current, new Size(36.0f, 70.0f));
+            Imgproc.resize(current, current, new Size(TARGET_CHAR_WIDTH, TARGET_CHAR_HEIGHT));
 
             double bestMatchAccuracy = 0;
             String bestMatchName = "";

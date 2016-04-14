@@ -44,7 +44,7 @@
     <!-- Debug stuff -->
     <string name="not_implemented">Feature currently unavailable</string>
     <string name="bad_json">Bad JSON format. Contact an admin.</string>
-    <string name="null_json">Return JSON was null</string>
+    <string name="connect_failed">Failed to connect to server</string>
     <string name="segment_failed">Segmentation failed</string>
 
     <!-- Settings -->
@@ -66,13 +66,25 @@
     <string name="open_width">Open width</string>
     <string name="open_height">Open height</string>
 
-    <string name="contour_settings"><b><i>Contour settings</i></b></string>
+    <string name="contour_settings"><b><i>Contour Settings</i></b></string>
     <string name="min_width">Minimum width</string>
     <string name="min_height">Minimum height</string>
     <string name="max_width">Maximum width</string>
     <string name="max_height">Maximum height</string>
     <string name="min_aspect">Minimum aspect</string>
     <string name="max_aspect">Maximum aspect</string>
+
+    <string name="registration">"Registration: "</string>
+    <string name="save_fail">Save Failed.</string>
+    <string name="result_validate">Result Validation</string>
+    <string name="number_plate">"Number Plate: "</string>
+    <string name="edit_continue">Edit or Continue?</string>
+    <string name="edit">Edit</string>
+    <string name="continue_str">Continue</string>
+    <string name="empty_field">One or more fields are empty</string>
+    <string name="password_short">Password too short</string>
+    <string name="password_no_match">New passwords don\'t match</string>
+    <string name="password_same">New password cannot be the same as the current password</string>
 
 
 </resources>

@@ -84,6 +84,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        // Draw the guide box to the screen
         Paint guideBoxPaintDetails = new Paint();
         guideBoxPaintDetails.setStyle(Paint.Style.STROKE);
 
@@ -96,6 +97,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         canvas.drawRect(mGuideBox, guideBoxPaintDetails);
     }
 
+    /**
+     * Update the camera with the devices orientation
+     */
     private void setCameraDisplayOrientation() {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Display display = ((Activity)mContext).getWindowManager().getDefaultDisplay();
@@ -103,16 +107,17 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         int rotation = display.getRotation();
         int degrees = 0;
 
+        // convert from device orientation to camera orientation
         switch (rotation) {
             case Surface.ROTATION_90:   degrees = 0;    break;
             case Surface.ROTATION_270:  degrees = 180;  break;
         }
 
-        // Adjust the cameras rotation
+        // Adjust the cameras display rotation
         int displayOrientation = (info.orientation - degrees + 360) % 360;
         mCamera.setDisplayOrientation(displayOrientation);
 
-        // Adjust the CameraPreview rotation
+        // Allow camera to auto focus
         Camera.Parameters params = mCamera.getParameters();
         params.setRotation(degrees);
         if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
@@ -127,6 +132,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    /**
+     * Create a new guide box to draw to the screen
+     * @return Guide box represented as a rectangle
+     */
     private Rect createGuideBox() {
         // These values are the standard dimension of an Irish license plate in millimeters.
         final float PLATE_WIDTH = 520.0f;
@@ -149,6 +158,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         );
     }
 
+    /**
+     * Set the camera to display. Links the device camera
+     * to the display surface
+     * @param camera the device camera
+     */
     private void setCamera(Camera camera) {
         if(camera == mCamera) { return; }
 
