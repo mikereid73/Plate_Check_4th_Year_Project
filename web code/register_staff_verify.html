@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="form">
+    <div class="text">
+You are now registered.
+    </div><br>
+<table>
+    <tr>
+        <td id="right">
+          Username:
+        </td>
+        <td id="left">
+            {{ username }}
+        </td>
+    </tr>
+    <tr>
+        <td id="right">
+            Email:
+        </td>
+        <td id="left">
+            {{ email }}
+        </td>
+
+    </tr>
+</table>
+
+{% endblock %}

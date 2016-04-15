@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<div class="text">
+    Please enter details of the person and vehicle.
+</div><br>
+<div class="form">
+<form action="/attempt_register_vehicle" method="POST">
+<table>
+    <tr>
+        <td id="right">First Name</td>
+        <td><input type="TEXT" name="first_name"></td>
+    </tr>
+    <tr>
+        <td id="right">Surname</td>
+        <td><input type="TEXT" name="last_name"></td>
+    </tr>
+    <tr>
+        <td id="right">Vehicle Registration</td>
+        <td><input type="TEXT" name="vehicle_registration"></td>
+    </tr>
+    <tr>
+        <td id="right">Email</td>
+        <td><input type="TEXT" name="email"></td>
+    </tr>
+</table>
+<br>
+
+<div class="button">
+    <input type="SUBMIT" value="Register Vehicle">
+</div>
+</form>
+</div>
+
+{% endblock %}

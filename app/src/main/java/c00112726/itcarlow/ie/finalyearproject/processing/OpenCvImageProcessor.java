@@ -32,34 +32,45 @@ import c00112726.itcarlow.ie.finalyearproject.processing.template.ImageTemplates
  */
 public class OpenCvImageProcessor {
 
+    /* The lowest value of RGB */
     private static final int MIN_RGB_BOUND = 0;
+    /* The highest value of RGB */
     private static final int MAX_RGB_BOUND = 255;
-
+    /* The average width of a plate character */
     private static final float TARGET_CHAR_WIDTH = 36.0f;
+    /* The average height of a plate character */
     private static final float TARGET_CHAR_HEIGHT = 70.0f;
+    /* The average aspect ratio of a character */
     private static final float TARGET_ASPECT_RATIO = TARGET_CHAR_WIDTH / TARGET_CHAR_HEIGHT;
+    /* A generous 55% error tolerance */
     private static final float ERROR_ALLOWED = 0.55f;
+    /* Minimum height of a character */
     private static final float MIN_CHAR_HEIGHT = 50.0f;
+    /* Maximum height of a character*/
     private static final float MAX_CHAR_HEIGHT = 100f;
+    /* Minimum character aspect ratio of a character. Allows things like the number 1 */
     private static final float MIN_CHAR_ASPECT = 0.05f;
+    /* Maximum character aspect ratio, taking error allowance into account */
     private static final float MAX_CHAR_ASPECT = TARGET_ASPECT_RATIO + TARGET_ASPECT_RATIO * ERROR_ALLOWED;
-
+    /* Width image is resized to. Conforms to legal Irish plate width */
     private static final float RESIZE_WIDTH = 520;
+    /* Height image is resized to. Conforms to legal Irish plate height */
     private static final float RESIZE_HEIGHT = 110;
-
+    /* The width of the kernel used when performing image opening */
     private static final float MORPH_OPEN_WIDTH = 7;
+    /* The height of the kernel used when performing image opening */
     private static final float MORPH_OPEN_HEIGHT = 5;
 
-    /*private static int BLUR_WIDTH;
-    private static int BLUR_HEIGHT;
-    private static int BLUR_DISTRIBUTION;
-
-    private static int IMAGE_OPEN_WIDTH;
-    private static int IMAGE_OPEN_HEIGHT;*/
-
+    /* No instance allowed */
     private OpenCvImageProcessor() {
     }
 
+    /**
+     * Utility method to convert an Android Bitmap to an OpenCV Mat
+     * @param input image to convert
+     * @param type type Mat type
+     * @return new Mat
+     */
     public static Mat bitmapToMat(Bitmap input, int type) {
         int width = input.getWidth();
         int height = input.getHeight();
@@ -70,13 +81,23 @@ public class OpenCvImageProcessor {
         return output;
     }
 
+    /**
+     * Pre-process the image for character segmentation.
+     * Calls a number of OpenCV methods.
+     * @param image image to process
+     * @return Mat of processed image
+     */
     public static Mat process(Bitmap image) {
+        // Convert to Mat, OpenCv only works with Mat
         Mat input = bitmapToMat(image, CvType.CV_8UC3);
         Mat output = new Mat();
 
+        // Resize image. Allows code to work regardless of image quality and size
         Imgproc.resize(input, output, new Size(RESIZE_WIDTH, RESIZE_HEIGHT));
+        // Convert to greyscale. Working with colour images is not an option.
         Imgproc.cvtColor(output, output, Imgproc.COLOR_BGR2GRAY);
 
+        // Calculate the Otsu value to use as a lower threshold value.
         double ostuValue = Imgproc.threshold(
                 output,
                 new Mat(), // we don't care about changing any Mats, we want the return value
@@ -85,6 +106,8 @@ public class OpenCvImageProcessor {
                 Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU
         );
 
+        // Threshold the image, using the Otsu value calculated.
+        // Invert black and white for later steps.
         Imgproc.threshold(
                 output,
                 output,
@@ -93,11 +116,14 @@ public class OpenCvImageProcessor {
                 Imgproc.THRESH_BINARY_INV
         );
 
+        // Create a structuring element to be used when opening the image.
         Mat element = Imgproc.getStructuringElement(
                 Imgproc.MORPH_RECT,
                 new Size(MORPH_OPEN_WIDTH, MORPH_OPEN_HEIGHT)
         );
 
+        // Perform image opening.
+        // Erode followed by a Dilate
         Imgproc.morphologyEx(
                 output,
                 output,
@@ -108,6 +134,12 @@ public class OpenCvImageProcessor {
         return output;
     }
 
+    /**
+     * Takes in a list of found contours in an image and creates a bounding box for them.
+     * The boxes are filtered to remove any which don't have the required dimension.
+     * @param contours List of found contours
+     * @return List of rectangles representing bounding boxes
+     */
     private static List<Rect> getBoundingBoxes(List<MatOfPoint> contours) {
         final List<Rect> boundingBoxes = new ArrayList<>();
 
@@ -130,35 +162,6 @@ public class OpenCvImageProcessor {
         return boundingBoxes;
     }
 
-    public static Map<String, List<Mat>> segmentImage(Mat processedImage) throws BadImageException {
-        List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(
-                processedImage.clone(),
-                contours,
-                new Mat(),                    // don't care about hierarchy
-                Imgproc.RETR_EXTERNAL,        // ignore contours within contours
-                Imgproc.CHAIN_APPROX_NONE
-        );
-        if(contours.size() <= 0) {
-            throw new BadImageException("No contours were detected");
-        }
-
-        List<Rect> boundingBoxes = getBoundingBoxes(contours);
-        if(boundingBoxes.size() <= 0) {
-            throw new BadImageException("No bounding boxes were detected");
-        }
-
-        List<Mat> segmentedImages = new ArrayList<>();
-
-        for (int i = 0; i < boundingBoxes.size(); i++) {
-            Rect currentBoundingBox = boundingBoxes.get(i);
-            Mat currentMat = processedImage.submat(currentBoundingBox);
-            segmentedImages.add(currentMat);
-        }
-
-        return splitIrishReg(segmentedImages, boundingBoxes);
-    }
-
     /**
      * Sort bounding boxes based on their x coordinate.
      * Ensures the segmented images are in order, left to right
@@ -173,20 +176,55 @@ public class OpenCvImageProcessor {
         });
     }
 
-    public static NumberPlate performOCR(Map<String, List<Mat>> images,
-                                         ImageTemplates imageTemplates) {
+    /**
+     * Segments the individual characters from the processed image.
+     * @param processedImage The pre processed image
+     * @return A map containing the characters of the image, separated as year, county, reg
+     * @throws BadImageException Thrown if no characters are found
+     */
+    public static Map<String, List<Mat>> segmentImage(Mat processedImage) throws BadImageException {
+        // Find all contours in the image and store them in a list.
+        List<MatOfPoint> contours = new ArrayList<>();
+        Imgproc.findContours(
+                processedImage.clone(),
+                contours,
+                new Mat(),                    // don't care about hierarchy
+                Imgproc.RETR_EXTERNAL,        // ignore contours within contours
+                Imgproc.CHAIN_APPROX_NONE
+        );
+        // Throw exception if no contours are found
+        if(contours.size() <= 0) {
+            throw new BadImageException("No contours were detected");
+        }
 
-        List<Mat> yearImages = images.get("year");
-        List<Mat> countyImages = images.get("county");
-        List<Mat> regImages = images.get("reg");
+        // Get bounding boxes for the found contours
+        List<Rect> boundingBoxes = getBoundingBoxes(contours);
 
-        String year = matchNumbers(yearImages, imageTemplates);
-        String county = matchLetters(countyImages, imageTemplates);
-        String reg = matchNumbers(regImages, imageTemplates);
+        // Throw exception if no bounding boxes are returned
+        if(boundingBoxes.size() <= 0) {
+            throw new BadImageException("No bounding boxes were detected");
+        }
 
-        return new NumberPlate(year, county, reg);
+        // Using the bounding boxes, segment those areas from main image
+        List<Mat> segmentedImages = new ArrayList<>();
+        for (int i = 0; i < boundingBoxes.size(); i++) {
+            Rect currentBoundingBox = boundingBoxes.get(i);
+            Mat currentMat = processedImage.submat(currentBoundingBox);
+            segmentedImages.add(currentMat);
+        }
+
+        // Split the reg and return characters
+        return splitIrishReg(segmentedImages, boundingBoxes);
     }
 
+    /**
+     * Split the bounding boxes into 3 parts; year, county, and reg
+     * This is useful when performing OCR, to avoid mismatching numbers and letters.
+     * Find the two biggest gaps between bounding boxes, which represent the hyphen.
+     * @param mats List of segmented characters
+     * @param boundingBoxes List of bounding boxes of segmented characters
+     * @return Map of the segmented characters, split up into year, county, reg
+     */
     public static Map<String, List<Mat>> splitIrishReg(List<Mat> mats, List<Rect> boundingBoxes) {
         int biggestGap = 0;
         int secondBiggestGap = 0;
@@ -213,6 +251,8 @@ public class OpenCvImageProcessor {
                 secondBiggestGapIndex = i;
             }
         }
+        // Swap values to ensure subList doesn't try to map backwards.
+        // i.e.  0-4, 5-2, etc
         if(secondBiggestGapIndex < biggestGapIndex) {
             int temp = biggestGapIndex;
             biggestGapIndex = secondBiggestGapIndex;
@@ -224,6 +264,7 @@ public class OpenCvImageProcessor {
             List<Mat> county = mats.subList(biggestGapIndex, secondBiggestGapIndex);
             List<Mat> reg = mats.subList(secondBiggestGapIndex, mats.size());
 
+            // Stick results in a map and return it
             Map<String, List<Mat>> fullRegSplit = new HashMap<>();
             fullRegSplit.put("year", year);
             fullRegSplit.put("county", county);
@@ -236,12 +277,39 @@ public class OpenCvImageProcessor {
         }
     }
 
+    /**
+     * Perform character recognition on the 3 groups of images
+     * @param images year, county, reg
+     * @param imageTemplates templates for available characters
+     * @return Image represented as a NumberPlate object
+     */
+    public static NumberPlate performOCR(Map<String, List<Mat>> images,
+                                         ImageTemplates imageTemplates) {
+
+        List<Mat> yearImages = images.get("year");
+        List<Mat> countyImages = images.get("county");
+        List<Mat> regImages = images.get("reg");
+
+        String year = matchNumbers(yearImages, imageTemplates);
+        String county = matchLetters(countyImages, imageTemplates);
+        String reg = matchNumbers(regImages, imageTemplates);
+
+        // Store result in a simple number plate class
+        return new NumberPlate(year, county, reg);
+    }
+
+    /**
+     * Perform template matching on images considered to be letters
+     * @param segmentedImages list of character images
+     * @param imageTemplates character templates
+     * @return segmentedImages represented as a String
+     */
     public static String matchLetters(List<Mat> segmentedImages, ImageTemplates imageTemplates) {
         final List<ImageTemplate> letterTemplates = imageTemplates.getLetterTemplates();
         final StringBuilder sb = new StringBuilder();
 
         for(int x = 0; x < segmentedImages.size(); x++) {
-            Mat current = segmentedImages.get(x).clone();
+            Mat current = segmentedImages.get(x).clone(); // clone to avoid changing original size
             Imgproc.resize(current, current, new Size(TARGET_CHAR_WIDTH, TARGET_CHAR_HEIGHT));
 
             double bestMatchAccuracy = 0;
@@ -257,7 +325,7 @@ public class OpenCvImageProcessor {
                     Mat result = new Mat();
                     Imgproc.matchTemplate(current, template, result, Imgproc.TM_CCOEFF);
 
-                    // / Localizing the best match with minMaxLoc
+                    // / Localising the best match with minMaxLoc
                     Core.MinMaxLocResult minMaxResult = Core.minMaxLoc(result);
                     if(minMaxResult.maxVal > bestMatchAccuracy) {
                         bestMatchAccuracy = minMaxResult.maxVal;
@@ -267,9 +335,19 @@ public class OpenCvImageProcessor {
             }
             sb.append(bestMatchName);
         }
+        if(segmentedImages.size() == 1 && sb.toString().equals("O")) {
+            sb.deleteCharAt(0);
+            sb.append("D");
+        }
         return sb.toString();
     }
 
+    /**
+     * Perform template matching on images considered to be numbers
+     * @param segmentedImages list of number images
+     * @param imageTemplates character templates
+     * @return segmentedImages represented as a String
+     */
     public static String matchNumbers(List<Mat> segmentedImages, ImageTemplates imageTemplates) {
         final List<ImageTemplate> numberTemplates = imageTemplates.getNumberTemplates();
         final StringBuilder sb = new StringBuilder();
@@ -291,7 +369,7 @@ public class OpenCvImageProcessor {
                     Mat result = new Mat();
                     Imgproc.matchTemplate(current, template, result, Imgproc.TM_CCOEFF);
 
-                    // / Localizing the best match with minMaxLoc
+                    // / Localising the best match with minMaxLoc
                     Core.MinMaxLocResult mmr = Core.minMaxLoc(result);
                     if(mmr.maxVal > bestMatchAccuracy) {
                         bestMatchAccuracy = mmr.maxVal;

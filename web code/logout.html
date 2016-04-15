@@ -1,0 +1,16 @@
+
+{% extends "base.html" %}
+
+{% block body %}
+
+<form action="/attempt_logout" method="POST">
+<div class="text">
+    You are now attempting to log out.
+    To continue, please click the button below.
+</div><br>
+<div class="button">
+    <input type="Submit" value = "Log Out">
+</div>
+</form>
+
+{% endblock %}

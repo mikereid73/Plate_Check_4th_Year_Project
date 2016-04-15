@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="text">
+    Vehicle has been successfully registered.
+</div><br>
+<div class="form">
+    <table>
+        <tr>
+            <td id="right">
+               Owner Name:
+            </td>
+            <td id="left">
+                {{ first_name + " " + last_name }}
+            </td>
+        </tr>
+        <tr>
+            <td id="right">
+                Owner Email:
+            </td>
+            <td id="left">
+                {{ email }}
+            </td>
+        </tr>
+                <tr>
+            <td id="right">
+                Vehicle Rehistration:
+            </td>
+            <td id="left">
+                {{ vehicle_registration }}
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+{% endblock %}

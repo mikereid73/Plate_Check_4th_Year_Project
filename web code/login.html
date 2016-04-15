@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<div class="text">
+    Please sign in using an admin username and password.
+</div><br>
+<body>
+<form action="/attempt_login" method="POST" name="login" onsubmit="return validateForm()">
+<div class="form">
+<table>
+    <tr>
+        <td id="right">
+            Username
+        </td>
+        <td>
+            <input type="TEXT" name="username">
+        </td>
+    </tr>
+    <tr>
+        <td id="right">
+            Password
+        </td>
+        <td>
+            <input type="PASSWORD" name="password">
+        </td>
+    </tr>
+</table>
+</div><br>
+
+
+<script type="text/javascript">
+    function validateForm() {
+        var username=document.forms["login"]["username"].value;
+        var password=document.forms["login"]["password"].value;
+        var uLength=username.length;
+        var pLength=password.length;
+        if (uLength < 3 || pLength < 3) {
+            alert("Please Fill All Required Field");
+            return false;
+        }
+    }
+</script>
+<div class="button">
+    <input type="SUBMIT" value="Log In">
+</div>
+</form>
+</body>
+
+{% endblock %}

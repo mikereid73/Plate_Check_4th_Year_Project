@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<!-- No change things -->
+
+<body>
+<div class="infra_table">
+    <title>{{ the_title }}</title>
+	<div class="infra">
+		<ul>
+            <li><a href="#all_offenders" class="box">All Infractions</a></li>
+			<li><a href="#today_offenders" class="box">Today's Infractions</a></li>
+			<li><a href="#month_offenders" class="box">This Month's Infractions</a></li>
+			<li><a href="#repeat_offenders" class="box">Repeat Offenders</a></li>
+		</ul>
+	</div>
+
+<h2><a name="all_offenders" id="infra_titles"><b>All Infractions</b><br></a></h2>
+
+<table border = 0>
+    <thead>
+        <th>Vehicle Registration</th>
+        <th>Owner</th>
+        <th>Email</th>
+        <th>Time</th>
+        <th>Logged By</th>
+    </thead>
+
+    {% for row in all_data %}
+    <tr>
+        <td>{{row[0]}}</td>
+        <td>{{row[2]}} {{row[1]}}</td>
+        <td>{{row[3]}}</td>
+        <td>{{row[4]}}</td>
+        <td>{{row[5]}}</td>
+    </tr>
+    {% endfor %}
+</table><br>
+
+
+<h2><a name="today_offenders" class="infra_titles"><b>Today's Infractions</b></a></h2>
+<table border = 0>
+    <thead>
+        <th>Vehicle Registration</td>
+        <th>Owner</th>
+        <th>Email</th>
+        <th>Time</th>
+        <th>Logged By</th>
+    </thead>
+
+    {% for row in today_data %}
+    <tr>
+        <td>{{row[0]}}</td>
+        <td>{{row[2]}} {{row[1]}}</td>
+        <td>{{row[3]}}</td>
+        <td>{{row[4]}}</td>
+        <td>{{row[5]}}</td>
+    </tr>
+    {% endfor %}
+</table><br>
+
+<h2><a name="month_offenders" class="infra_titles"><b>This month's Infractions</b></a></h2>
+<table border = 0>
+    <thead>
+        <th>Vehicle Registration</td>
+        <th>Owner</th>
+        <th>Email</th>
+        <th>Time</th>
+        <th>Logged By</th>
+    </thead>
+
+    {% for row in month_data %}
+    <tr>
+        <td>{{row[0]}}</td>
+        <td>{{row[2]}} {{row[1]}}</td>
+        <td>{{row[3]}}</td>
+        <td>{{row[4]}}</td>
+        <td>{{row[5]}}</td>
+    </tr>
+    {% endfor %}
+</table><br>
+
+<h2><a name="repeat_offenders" class="infra_titles"><b>Repeat Offenders</b></a></h2>
+<table border = 0>
+    <thead>
+        <th>Vehicle Registration</th>
+        <th>Owner</th>
+        <th>Email</th>
+        <th>Number of Infractions</th>
+    </thead>
+
+    {% for row in repeat_data %}
+    <tr>
+        <td>{{row[0]}}</td>
+        <td>{{row[2]}} {{row[1]}}</td>
+        <td>{{row[3]}}</td>
+        <td>{{row[4]}}</td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+</body>
+
+{% endblock %}

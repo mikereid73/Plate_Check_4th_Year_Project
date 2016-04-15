@@ -136,7 +136,7 @@ public class SaveImageTask extends AsyncTask<byte[], String, File> {
                     ExifInterface.TAG_ORIENTATION,
                     ExifInterface.ORIENTATION_NORMAL);
 
-            Log.v(TAG, "Orient: " + exifOrientation);
+            Log.d(TAG, "Orientation: " + exifOrientation);
 
             int rotate = 0;
 
@@ -166,7 +166,7 @@ public class SaveImageTask extends AsyncTask<byte[], String, File> {
                 image = Bitmap.createBitmap(image, 0, 0, w, h, mtx, false);
             }
 
-            // Convert to ARGB_8888, required by tess
+            // Convert to ARGB_8888
             return image.copy(Bitmap.Config.ARGB_8888, true);
 
         } catch (IOException e) {

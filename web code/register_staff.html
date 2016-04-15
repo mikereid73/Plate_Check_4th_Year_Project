@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block body %}
+<body>
+<div class="text">
+    Please register using a unique username and password.
+</div><br>
+<div class="form">
+<form action="/attempt_register" method="POST">
+<table>
+    <tr>
+        <td  id="right">Username</td>
+        <td><input type="TEXT" name="username"></td>
+    </tr>
+    <tr>
+        <td  id="right">Password</td>
+        <td><input type="PASSWORD" name="password"></td>
+    </tr>
+    <tr>
+        <td  id="right">Email</td>
+        <td><input type="TEXT" name="email"></td>
+    </tr>
+</table>
+
+<br>
+<div class="button">
+    <input type="SUBMIT" value="Register">
+</div>
+</form>
+</div>
+
+{% endblock %}
+</body>

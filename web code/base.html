@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<link type="text/css" rel="stylesheet" href="/static/css/stylesheet.css"/>
+        <title>Plate Check</title>
+        <link rel="shortcut icon" href="/static/image/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/static/image/favicon.ico" type="image/x-icon">
+	</head>
+	<body>
+		<div class="navbar">
+			<ul>
+				<li><a href="/view_all_vehicles">View All Registered Vehicles</a></li>
+				<li><a href="/register_new_vehicle">Register New Vehicle</a></li>
+				<li><a href="/register_new_staff">Add Staff</a></li>
+				<li><a href="/view_all_infractions">View Infractions</a></li>
+				<li><a href="/logout">Log Out</a></li>
+			</ul>
+        </div>
+
+        <h1>{{ the_title }}</h1>
+
+        {% block body %}
+
+        {% endblock %}
+
+		<div id="footer">
+		    <div id="copy">
+			<br>
+			Copyright &copy; 2016 by Michael Reid
+			</div>
+		</div>
+    </body>
+</html>

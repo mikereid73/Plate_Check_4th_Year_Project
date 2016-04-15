@@ -66,8 +66,8 @@ public class ChangePasswordTask extends AsyncTask<String, Void, JSONObject> {
         try {
             URL url = new URL(LOGIN_URL);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setReadTimeout(10000 /*milliseconds*/);
-            urlConnection.setConnectTimeout(15000 /* milliseconds */);
+            urlConnection.setReadTimeout(10000); /* milliseconds */
+            urlConnection.setConnectTimeout(15000); /* milliseconds */
             urlConnection.setRequestMethod("POST");
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);

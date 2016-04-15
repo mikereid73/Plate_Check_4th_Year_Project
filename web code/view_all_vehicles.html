@@ -1,0 +1,35 @@
+<head>
+    <title>
+        {{ the_title }}
+    </title>
+</head>
+
+{% extends "base.html" %}
+
+{% block body %}
+
+<div class="text">
+    You are viewing all registered vehicles.</p>
+</div>
+
+<div class="infra_table">
+<table>
+    <thead>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Vehicle Registration</th>
+        <th>Email</th>
+    </thead>
+    {% for row in all_vehicles %}
+    <tr>
+        <td>{{row[0]}}</td>
+        <td>{{row[1]}}</td>
+        <td>{{row[2]}}</td>
+        <td>{{row[3]}}</td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+
+
+{% endblock %}
