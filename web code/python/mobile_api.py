@@ -9,7 +9,7 @@ from emailverifier import send_verification_email
 DBconfig = {
                 'HOST' : 'mikereid73.mysql.pythonanywhere-services.com',
                 'USER' : 'mikereid73',
-                'PASSWORD' : 'alongpassword',
+                'PASSWORD' : '--------',
                 'DATABASE' : 'mikereid73$ProjectDB'
             }
 
